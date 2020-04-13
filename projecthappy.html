@@ -1,0 +1,157 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Project Happy</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+    <script src="js/OrbitControls.js"></script>
+    <script src="js/THREEx.WindowResize.js"></script>
+    <script src="js/THREEx.FullScreen.js"></script>
+    <script src="js/KeyboardState.js"></script>
+
+    <!-- <script src="https://zimjs.org/cdn/10.7.1/zim.js"></script> -->
+
+
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+
+            // SCENE
+            const scene = new THREE.Scene();
+
+            // CAMERA
+            const viewAngle = 70;
+            const windowW = window.innerWidth;
+            const windowH = window.innerHeight;
+            const aspectRatio = windowW/windowH;
+            const near = .1;
+            const far = 1000;
+            const camera = new THREE.PerspectiveCamera(viewAngle, aspectRatio, near, far);
+            camera.position.z = 20; // back out of screen from origin (0,0,0)
+            // camera.position.set(10,10,30); // x,y,z
+            // camera.lookAt(scene.position);
+
+            // RENDERER
+            const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+            renderer.setSize(windowW, windowH);
+            renderer.setClearColor( 0x000000, 0.5 );
+            document.body.appendChild(renderer.domElement);
+
+            // EVENTS
+        	THREEx.WindowResize(renderer, camera);
+        	THREEx.FullScreen.bindKey({charCode : 'm'.charCodeAt(0)});
+            var keyboard = new KeyboardState();
+
+            // GEOMETRY
+            const geometry = new THREE.CylinderGeometry(16, 12, 40, 8, 2);
+            var geometry2 = new THREE.CylinderGeometry( 8, 8, 2, 36 );
+
+            // MATERIAL
+            // const material = new THREE.MeshBasicMaterial({color:0x00ff00}); // no shadows
+            // const material = new THREE.MeshLambertMaterial({color:0x000088}); // needs light
+            const material = new THREE.MeshPhongMaterial({opacity : .8, side:THREE.DoubleSide, transparent:true}); // test colors
+            var material2 = new THREE.MeshBasicMaterial( {color: 0xeec362} ); // test colors
+
+            // MESH
+            const cubes = [];
+            const spacing = 12;
+            const num = 1800;
+            for (i=0; i<num; i++){
+                var cube = new THREE.Mesh(geometry, material);
+                var cylinder = new THREE.Mesh( geometry2, material2 );
+                cube.position.x=(Math.random()-0.5)*3000;
+                cube.position.y=(Math.random()-0.5)*3000;
+                cube.position.z=(Math.random()-0.5)*3000;
+                cube.rotation.x=Math.random()*.05;
+                cube.rotationSpeed=Math.random()*.01-.005;
+
+                cubes.push(cube);
+                scene.add(cube);
+
+                cube.add(cylinder);
+                cylinder.position.set(0,-21,0);
+            };
+
+
+            const light = new THREE.PointLight( 0xff8f00, .5, 100 );
+            light.position.set(10,10,10);
+            scene.add(light);
+            // const helper = new THREE.PointLightHelper(light);
+            // helper.position.set(10,10,10);
+            // scene.add(helper);
+
+            const light2 = new THREE.PointLight(0xff8f00, .5, 100);
+            light2.position.set(0,0,0);
+            scene.add(light2);
+            // const helper = new THREE.PointLightHelper(light2);
+            // helper.position.set(0,0,0);
+            // scene.add(helper);
+
+            const light3 = new THREE.PointLight( 0xff8f00, .5, 100 );
+            light3.position.set(-10,10,10);
+            scene.add(light3);
+            // const helper = new THREE.PointLightHelper(light3);
+            // helper.position.set(-10,10,10);
+            // scene.add(helper);
+
+            const light4 = new THREE.PointLight( 0xff8f00, .5, 100 );
+            light4.position.set(10,-10,10);
+            scene.add(light4);
+            // const helper = new THREE.PointLightHelper(light4);
+            // helper.position.set(10,-10,10);
+            // scene.add(helper);
+
+            const light5 = new THREE.PointLight( 0xff0000, 1, 100 );
+            light5.position.set(10,10,-10);
+            scene.add(light5);
+            // const helper = new THREE.PointLightHelper(light5);
+            // helper.position.set(10,10,510);
+            // scene.add(helper);
+
+
+            const lightCenter = new THREE.PointLight( 0xff0000, 1, 100 );
+            lightCenter.position.set(0,-7,0);
+            scene.add(lightCenter);
+            // const helper = new THREE.PointLightHelper(light5);
+            // helper.position.set(10,10,510);
+            // scene.add(helper);
+
+            // FLOOR
+            var loader = new THREE.TextureLoader();
+            var floorTexture = loader.load("lanterngradient.jpg");
+            floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+            floorTexture.repeat.set(100, 100);
+            var floorMaterial = new THREE.MeshBasicMaterial({color: 0x181572,transparent:false, side: THREE.DoubleSide});
+            var floorGeometry = new THREE.PlaneBufferGeometry(100000, 100000, 10, 10);
+            var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.position.y = -260;
+            floor.rotation.x = Math.PI / 2;
+            scene.add(floor);
+            scene.fog = THREE.FogExp2("white", 0.005);
+
+
+            // CONTROLS
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+            // ANIMATION
+            function render() {
+                cubes.forEach((cube)=>{
+                    cube.rotation.y += cube.rotationSpeed;
+                    cube.position.y += .1+Math.random()*.2;
+                })
+               renderer.render(scene, camera);
+                // renderer.setClearColor( 0x060841);
+                requestAnimationFrame(render);
+            }
+            render();
+        });
+    </script>
+
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+    	body {margin:0px; background-image: linear-gradient(#1600BC, #F243FA);}
+    	canvas {width:100%; height:100%}
+    </style>
+</head>
+<body>
+</body>
+</html>
